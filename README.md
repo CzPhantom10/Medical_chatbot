@@ -2,7 +2,8 @@
 
 A Streamlit application that uses AI to analyze medical symptoms and recommend appropriate doctors based on the analysis.
 
-![Medical Symptom Analyzer](https://raw.githubusercontent.com/streamlit/demo-self-driving/master/streamlit-app-2.png)
+![Medical Symptom Analyzer](https://i.imgur.com/your-image-upload-id.png)
+<!-- Note: You'll need to upload this screenshot to an image hosting service and replace the URL above with the actual image URL -->
 
 ## 📋 Features
 
