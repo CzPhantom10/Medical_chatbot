@@ -62,7 +62,7 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
 
 1. Run the application:
    ```bash
-   streamlit run app.py
+   streamlit run chatbot.py
    ```
 
 2. Open your web browser and navigate to `http://localhost:8501`
