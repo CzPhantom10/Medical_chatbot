@@ -7,7 +7,7 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
 
 ## 📋 Features
 
-- Interactive symptom analysis through an AI-powered chatbot
+- Interactive symptom analysis through an AI-powered chatbot.
 - Display of possible medical conditions with likelihood indicators
 - Specialist doctor recommendations based on symptoms
 - Comprehensive doctor directory with search and filter capabilities
