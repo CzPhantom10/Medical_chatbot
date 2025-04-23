@@ -22,7 +22,11 @@ if not groq_api_key:
     st.error("GROQ_API_KEY not found in environment variables. Please add it to your .env file.")
     st.stop()
 
-client = Groq(api_key=groq_api_key)
+# Updated client initialization for groq 0.4.1
+client = Groq(
+    api_key=groq_api_key,
+    # No proxies parameter - it's been deprecated
+)
 
 # Function to load doctors database from CSV
 @st.cache_data
