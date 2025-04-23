@@ -23,10 +23,7 @@ if not groq_api_key:
     st.stop()
 
 # Updated client initialization for groq 0.4.1
-client = Groq(
-    api_key=groq_api_key,
-    # No proxies parameter - it's been deprecated
-)
+client = Groq(api_key=groq_api_key, base_url=None)  # Don't use any proxies
 
 # Function to load doctors database from CSV
 @st.cache_data
