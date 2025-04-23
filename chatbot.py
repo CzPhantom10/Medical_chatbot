@@ -95,7 +95,7 @@ def generate_medical_response(symptoms, doctors_data):
                     {"role": "user", "content": user_message}
                 ],
                 model="llama-3.3-70b-versatile",
-                temperature=0.2, 
+                temperature=0.5,
                 max_completion_tokens=1024,
                 response_format={"type": "json_object"}
             )
