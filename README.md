@@ -9,7 +9,8 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
 - Interactive symptom analysis through an AI-powered chatbot
 - Display of possible medical conditions with likelihood indicators
 - Specialist doctor recommendations based on symptoms
-- Comprehensive doctor directory with specialization details
+- Comprehensive doctor directory with search and filter capabilities
+- Detailed doctor profiles including specialization, experience, hospital, availability, languages, and more
 - User-friendly interface with helpful guidance
 - Secure API key management
 
@@ -18,29 +19,30 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
 - **Streamlit**: For the web application interface
 - **Groq API**: For AI-powered symptom analysis
 - **Python**: Core programming language
+- **Pandas**: For data handling and CSV processing
 - **dotenv**: For environment variable management
 
 ## ⚙️ Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/medical-symptom-analyzer.git
-   cd medical-symptom-analyzer
+   git clone https://github.com/CzPhantom10/Medical_chatbot.git
+   cd MEDICAL CHATBOT
    ```
 
 2. Create a virtual environment:
    ```bash
-   python -m venv venv
+   python -m venv myenv
    ```
 
 3. Activate the virtual environment:
    - On Windows:
      ```bash
-     venv\Scripts\activate
+     myenv\Scripts\activate
      ```
    - On macOS/Linux:
      ```bash
-     source venv/bin/activate
+     source myenv/bin/activate
      ```
 
 4. Install required packages:
@@ -52,6 +54,8 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
    ```
    GROQ_API_KEY=your_groq_api_key_here
    ```
+
+6. Make sure the `doctors_database.csv` file is in the project directory.
 
 ## 🚀 Usage
 
@@ -66,6 +70,7 @@ A Streamlit application that uses AI to analyze medical symptoms and recommend a
    - Enter your symptoms in the text area
    - Click "Analyze Symptoms"
    - Review the analysis results and doctor recommendations
+   - Use the "Find a Doctor" page to search and filter the doctor database
 
 ## 📌 Important Notes
 
@@ -86,6 +91,7 @@ GROQ_API_KEY=your_groq_api_key_here
 ```
 medical-symptom-analyzer/
 ├── app.py               # Main Streamlit application file
+├── doctors_database.csv # Database of doctors with their details
 ├── requirements.txt     # Python dependencies
 ├── .env                 # Environment variables (not tracked in Git)
 ├── .gitignore           # Git ignore file
@@ -94,11 +100,20 @@ medical-symptom-analyzer/
 
 ## 🛠️ Customization
 
-You can customize the doctor database by modifying the `DOCTORS_DATABASE` list in `app.py`. Each doctor entry should include:
-- name
-- specialization
-- experience
-- contact
+### Editing the Doctor Database
+
+You can modify the doctor database by editing the `doctors_database.csv` file. Each doctor entry includes:
+
+- name: The doctor's full name
+- specialization: The doctor's medical specialty
+- experience: Years of experience
+- contact: Contact phone number
+- address: Office address
+- hospital: Associated hospital or medical center
+- availability: Working hours
+- languages: Languages spoken
+- education: Educational background and training
+- rating: Patient satisfaction rating (decimal number)
 
 ## 📄 License
 

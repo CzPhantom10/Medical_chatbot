@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+import pandas as pd
 from groq import Groq
 from typing import List, Dict, Any
 from dotenv import load_dotenv
@@ -23,20 +24,25 @@ if not groq_api_key:
 
 client = Groq(api_key=groq_api_key)
 
-# Define doctors database
-DOCTORS_DATABASE = [
-    {"name": "Dr. Alice Johnson", "specialization": "Cardiology", "experience": "15 years", "contact": "555-0123"},
-    {"name": "Dr. Robert Smith", "specialization": "Neurology", "experience": "12 years", "contact": "555-0124"},
-    {"name": "Dr. Emily Chen", "specialization": "Dermatology", "experience": "10 years", "contact": "555-0125"},
-    {"name": "Dr. Michael Rodriguez", "specialization": "Orthopedics", "experience": "20 years", "contact": "555-0126"},
-    {"name": "Dr. Sarah Williams", "specialization": "Gastroenterology", "experience": "8 years", "contact": "555-0127"},
-    {"name": "Dr. James Wilson", "specialization": "Pulmonology", "experience": "14 years", "contact": "555-0128"},
-    {"name": "Dr. Lisa Brown", "specialization": "Endocrinology", "experience": "11 years", "contact": "555-0129"},
-    {"name": "Dr. Mark Davis", "specialization": "Psychiatry", "experience": "9 years", "contact": "555-0130"},
-    {"name": "Dr. Nancy Lee", "specialization": "Ophthalmology", "experience": "16 years", "contact": "555-0131"},
-    {"name": "Dr. Thomas Martin", "specialization": "ENT", "experience": "13 years", "contact": "555-0132"},
-    {"name": "Dr. Jennifer Garcia", "specialization": "General Practice", "experience": "8 years", "contact": "555-0133"},
-]
+# Function to load doctors database from CSV
+@st.cache_data
+def load_doctors_database():
+    try:
+        # Try to load from CSV file
+        df = pd.read_csv("doctors_database.csv")
+        # Convert DataFrame to list of dictionaries
+        return df.to_dict(orient="records")
+    except Exception as e:
+        st.error(f"Error loading doctors database: {e}")
+        # Return a default database as fallback
+        return [
+            {"name": "Dr. Alice Johnson", "specialization": "Cardiology", "experience": "15 years", "contact": "555-0123"},
+            {"name": "Dr. Robert Smith", "specialization": "Neurology", "experience": "12 years", "contact": "555-0124"},
+            {"name": "Dr. Jennifer Garcia", "specialization": "General Practice", "experience": "8 years", "contact": "555-0133"},
+        ]
+
+# Load doctors database
+DOCTORS_DATABASE = load_doctors_database()
 
 
 def generate_medical_response(symptoms, doctors_data):
@@ -111,25 +117,74 @@ def display_doctors_list():
     """Display the list of all available doctors"""
     st.header("Our Medical Specialists")
     
-    # Create columns for better display
+    # Add search and filter options
+    st.subheader("Find a Doctor")
     col1, col2 = st.columns(2)
     
-    # Split the list for two-column display
-    half = len(DOCTORS_DATABASE) // 2
-    
     with col1:
-        for doctor in DOCTORS_DATABASE[:half+1]:
-            with st.expander(f"{doctor['name']} - {doctor['specialization']}"):
-                st.write(f"**Specialization:** {doctor['specialization']}")
-                st.write(f"**Experience:** {doctor['experience']}")
-                st.write(f"**Contact:** {doctor['contact']}")
+        search_term = st.text_input("Search by name or keyword:")
     
     with col2:
-        for doctor in DOCTORS_DATABASE[half+1:]:
-            with st.expander(f"{doctor['name']} - {doctor['specialization']}"):
-                st.write(f"**Specialization:** {doctor['specialization']}")
-                st.write(f"**Experience:** {doctor['experience']}")
-                st.write(f"**Contact:** {doctor['contact']}")
+        specialties = [doc["specialization"] for doc in DOCTORS_DATABASE]
+        specialties = sorted(list(set(specialties)))
+        selected_specialty = st.selectbox("Filter by specialty:", ["All Specialties"] + specialties)
+    
+    # Filter doctors based on search and specialty
+    filtered_doctors = DOCTORS_DATABASE
+    if search_term:
+        filtered_doctors = [doc for doc in filtered_doctors if search_term.lower() in doc["name"].lower() or 
+                           (doc.get("specialization") and search_term.lower() in doc["specialization"].lower())]
+    
+    if selected_specialty != "All Specialties":
+        filtered_doctors = [doc for doc in filtered_doctors if doc.get("specialization") == selected_specialty]
+    
+    # Display number of results
+    st.write(f"Found {len(filtered_doctors)} doctors")
+    
+    if not filtered_doctors:
+        st.info("No doctors match your search criteria. Please try different keywords or filters.")
+        return
+    
+    # Create a grid layout for doctors
+    cols = st.columns(3)
+    
+    for i, doctor in enumerate(filtered_doctors):
+        col_idx = i % 3
+        
+        with cols[col_idx]:
+            with st.container():
+                st.markdown(f"### {doctor['name']}")
+                st.markdown(f"**Specialization:** {doctor.get('specialization', 'N/A')}")
+                st.markdown(f"**Experience:** {doctor.get('experience', 'N/A')}")
+                
+                # Check for additional fields
+                if 'hospital' in doctor:
+                    st.markdown(f"**Hospital:** {doctor['hospital']}")
+                if 'availability' in doctor:
+                    st.markdown(f"**Availability:** {doctor['availability']}")
+                
+                # Contact and rating in same row
+                contact_rating_col1, contact_rating_col2 = st.columns(2)
+                with contact_rating_col1:
+                    st.markdown(f"**Contact:** {doctor.get('contact', 'N/A')}")
+                if 'rating' in doctor:
+                    with contact_rating_col2:
+                        st.markdown(f"**Rating:** {'⭐' * int(float(doctor['rating']))}")
+                
+                # Expandable details section
+                with st.expander("More Details"):
+                    if 'address' in doctor:
+                        st.markdown(f"**Address:** {doctor['address']}")
+                    if 'languages' in doctor:
+                        st.markdown(f"**Languages:** {doctor['languages']}")
+                    if 'education' in doctor:
+                        st.markdown(f"**Education:** {doctor['education']}")
+                
+                # Book appointment button
+                st.button(f"Book with Dr. {doctor['name'].split()[-1]}", key=f"book_{i}")
+                
+                # Add separator
+                st.markdown("---")
 
 
 def display_medical_response(response):
@@ -173,6 +228,15 @@ def display_medical_response(response):
                 st.markdown(f"**Specialization:** {doctor['specialization']}")
                 st.markdown(f"**Experience:** {doctor['experience']}")
                 st.markdown(f"**Contact:** {doctor['contact']}")
+                
+                # Check for additional fields
+                doctor_full_data = next((d for d in DOCTORS_DATABASE if d["name"] == doctor["name"]), None)
+                if doctor_full_data:
+                    if 'hospital' in doctor_full_data:
+                        st.markdown(f"**Hospital:** {doctor_full_data['hospital']}")
+                    if 'rating' in doctor_full_data:
+                        st.markdown(f"**Rating:** {'⭐' * int(float(doctor_full_data['rating']))}")
+                
                 st.button(f"Contact Dr. {doctor['name'].split()[-1]}", key=f"contact_{i}")
     
     # Display disclaimer
@@ -195,7 +259,7 @@ def main():
     # Create sidebar
     with st.sidebar:
         st.header("Navigation")
-        page = st.radio("Go to", ["Symptom Analysis", "View All Doctors"])
+        page = st.radio("Go to", ["Symptom Analysis", "Find a Doctor", "About Us"])
         
         st.markdown("---")
         st.markdown("### About")
@@ -220,20 +284,13 @@ def main():
             )
             
             submit_button = st.form_submit_button(label="Analyze Symptoms")
-        
-        # Process form submission
         if submit_button and symptoms.strip():
             response = generate_medical_response(symptoms, DOCTORS_DATABASE)
             if "error" not in response:
                 st.success("Analysis completed!")
-                
-            # Display the results
-            display_medical_response(response)
-            
+            display_medical_response(response)       
         elif submit_button and not symptoms.strip():
             st.error("Please describe your symptoms before submitting.")
-            
-        # Display sample symptoms for reference
         with st.expander("Need help describing symptoms?"):
             st.markdown(
                 """
@@ -249,10 +306,39 @@ def main():
                 3. "Frequent headaches on the right side of my head, throbbing pain, worse in the morning and when bending over."
                 """
             )
-    
-    else:  # View All Doctors page
+    elif page == "Find a Doctor":
         display_doctors_list()
-
-
+    else:  # About Us page
+        st.header("About Medical Symptom Analyzer")
+        st.subheader("Our Mission")
+        st.write(
+            """
+            Medical Symptom Analyzer was developed to bridge the gap between symptom awareness and professional 
+            medical consultation. Our tool provides preliminary insights to help you understand potential causes 
+            for your symptoms and connect you with appropriate specialists.
+            """
+        )
+        st.subheader("How It Works")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("### 1. Describe Symptoms")
+            st.markdown("Enter detailed description of your symptoms, their duration, severity, and any relevant medical history.")
+        
+        with col2:
+            st.markdown("### 2. AI Analysis")
+            st.markdown("Our advanced AI system processes your symptoms against a comprehensive medical knowledge base.")
+        
+        with col3:
+            st.markdown("### 3. Get Recommendations")
+            st.markdown("Receive potential conditions and recommended specialists to consult for proper diagnosis.")
+        st.subheader("Important Disclaimer")
+        st.warning(
+            """
+            This tool is designed for informational purposes only and should not replace professional medical advice, 
+            diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider 
+            with any questions you may have regarding a medical condition.
+            """
+        )
 if __name__ == "__main__":
     main()
